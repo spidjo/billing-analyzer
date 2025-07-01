@@ -1,1 +1,6 @@
 pandas
+streamlit
+matplotlib
+numpy
+reportlab
+email-validator

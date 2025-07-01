@@ -4,11 +4,11 @@ import os
 
 # Config
 DB_FILE = 'billing.db'
-CSV_FILE = 'data/cdr_sample.csv'
+CSV_FILE = 'data/billing_data.csv'
 SQL_DIR = 'sql'
 
 def load_csv_to_sqlite(csv_path, db_conn):
-    df = pd.read_csv(csv_path, parse_dates=['start_time'])
+    df = pd.read_csv(csv_path, parse_dates=['billing_date'])
     df.to_sql('cdrs', db_conn, if_exists='replace', index=False)
     print("[✔] Loaded CSV into SQLite")
 
