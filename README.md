@@ -179,7 +179,6 @@ pip install -r requirements.txt
 ## 🧑‍💻 Author
 
 **Siphiwo Lumkwana (Spidjo)**  
-GitHub: @spidjo(https://github.com/spidjo)
 
 ---
 
