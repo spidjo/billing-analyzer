@@ -1,6 +1,6 @@
 # 📊 SQL Billing Analyzer
 
-A Streamlit-powered anomaly detection dashboard for analyzing telecom billing data using SQL & Python. Built to help identify unusual billing patterns, generate PDF reports, and email them to stakeholders.
+A Streamlit-powered anomaly detection dashboard for analyzing billing data using SQL & Python. Built to help identify unusual billing patterns, generate PDF reports, and email them to stakeholders.
 
 ---
 
