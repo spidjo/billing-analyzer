@@ -123,21 +123,22 @@ Ensure column names are correctly mapped when uploading.
 
 ---
 
-## 🛠 To Do / Enhancements
+## 💼 Use Cases
 
-- Add audit logging
-- Implement customizable billing plans
-- Add JWT/Session authentication for backend APIs
-- Switch SQLite to PostgreSQL or MySQL for production
+- Telecom or ISP billing audits  
+- Enterprise cost monitoring  
+- Freelancers offering billing dashboards or audit reports  
+- Portfolio project to showcase Python + SQL + Streamlit + automation
+
+---
+
+## 🧑‍💻 Author
+
+**Siphiwo Lumkwana (Spidjo)**  
+GitHub: @spidjo(https://github.com/spidjo)
 
 ---
 
 ## 📝 License
 
-MIT License
-
----
-
-## 🙌 Contributing
-
-Pull requests welcome. Please fork and submit changes via PR!
+MIT License – Free to use and modify
