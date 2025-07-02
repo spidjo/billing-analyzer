@@ -4,3 +4,4 @@ matplotlib
 numpy
 reportlab
 email-validator
+bcrypt

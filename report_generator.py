@@ -5,13 +5,13 @@ from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, 
 import pandas as pd
 from datetime import datetime
 
-def generate_anomaly_report(anomalies: pd.DataFrame, stats: dict, output_file='anomaly_report.pdf'):
+def generate_pdf_report(anomalies: pd.DataFrame, stats: dict, output_file='anomaly_report.pdf'):
     doc = SimpleDocTemplate(output_file, pagesize=A4)
     elements = []
     styles = getSampleStyleSheet()
 
     # Title
-    elements.append(Paragraph("📊 SQL Billing Anomaly Report", styles['Title']))
+    elements.append(Paragraph("📊 Billing Anomaly Report", styles['Title']))
     elements.append(Spacer(1, 12))
 
     # Summary Stats
@@ -19,7 +19,7 @@ def generate_anomaly_report(anomalies: pd.DataFrame, stats: dict, output_file='a
     summary_data = [
         ["Mean Cost", f"{stats['mean']:.2f}"],
         ["Standard Deviation", f"{stats['std']:.2f}"],
-        ["Total Anomalies", str(stats['count'])]
+        ["Total Anomalies", str(stats['outlier_count'])]
     ]
     summary_table = Table(summary_data, hAlign='LEFT')
     summary_table.setStyle(TableStyle([

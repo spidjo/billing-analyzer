@@ -1,16 +1,17 @@
 import smtplib
 from email.message import EmailMessage
-import os
 
 def send_email_with_attachment(
-    sender_email: str,
-    receiver_email,  # Accept str or list[str]
+    *,
+    sender_email,
+    sender_password,
+    receiver_email,
     subject: str,
     body: str,
-    pdf_path: str,
+    attachment_buffer,
+    file_name: str,
     smtp_server: str = 'smtp.gmail.com',
-    smtp_port: int = 587,
-    sender_password: str = None
+    smtp_port: int = 587
 ):
     if isinstance(receiver_email, str):
         receiver_email = [receiver_email]
@@ -21,9 +22,12 @@ def send_email_with_attachment(
     msg['To'] = ', '.join(receiver_email)
     msg.set_content(body)
 
-    with open(pdf_path, 'rb') as f:
-        pdf_data = f.read()
-    msg.add_attachment(pdf_data, maintype='application', subtype='pdf', filename=os.path.basename(pdf_path))
+    # Add attachment
+    attachment_buffer.seek(0)
+    msg.add_attachment(attachment_buffer.read(),
+                       maintype="application",
+                       subtype="pdf",
+                       filename=file_name)
 
     with smtplib.SMTP(smtp_server, smtp_port) as server:
         server.starttls()
