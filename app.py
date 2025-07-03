@@ -284,8 +284,8 @@ def generate_monthly_bills():
     return new_bills
 
 # === Entry Point ===
-login_form()
-if st.session_state.get("authenticated"):
-    main_dashboard()
+if not st.session_state.get("authenticated"):
+    login_form()
+    st.stop()  # Stop here after login/register forms
 else:
-    st.stop()
+    main_dashboard()
