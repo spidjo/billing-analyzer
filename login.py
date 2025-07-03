@@ -118,4 +118,4 @@ def login_form():
 def logout():
     for key in ["authenticated", "username", "role"]:
         st.session_state.pop(key, None)
-    st.rerun()
+    # st.rerun()
