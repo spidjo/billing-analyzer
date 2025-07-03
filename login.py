@@ -100,13 +100,18 @@ def login_form():
         email = st.text_input("Email Address")
         register_btn = st.button("Register")
 
+        if st.session_state.get("registration_success"):
+            st.success("✅ Registration successful. Please log in.")
+            st.session_state.registration_success = False  # Reset flag
+        
         if register_btn:
             if not new_username or not new_password or not first_name or not last_name or not company or not email:
                 st.warning("All fields are required.")
             else:
                 success = register_user(new_username, new_password, first_name, last_name, company, email)
                 if success:
-                    st.success("✅ Registration successful. Please log in.")
+                    st.session_state.registration_success = True
+                    st.session_state.clear_form = True
                     st.rerun()
 
 # === Logout Function ===
