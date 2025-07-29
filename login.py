@@ -71,7 +71,7 @@ def register_user(username, password, first_name, last_name, company, email):
         conn.commit()
 
         # Send confirmation email
-        verify_link = f"http://localhost:8501/?verify={token}"  # Adjust for production
+        verify_link = f"https://billing-analyzer-app.streamlit.app/?verify={token}"  # Adjust for production
         body = f"Hello {first_name},\n\nPlease verify your email address by clicking the link below:\n{verify_link}"
         send_plain_email(
             sender_email=SENDER_EMAIL,
