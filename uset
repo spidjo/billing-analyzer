@@ -11,12 +11,10 @@ hashed_pw = bcrypt.hashpw("testpass".encode(), bcrypt.gensalt())
 registration_date = datetime.date.today().isoformat()
     
 cursor.execute("""
-        INSERT INTO users (username, password, role, first_name, last_name, company_name, email, registration_date)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    """, (
-        "adminuser", hashed_pw, "admin",
-        "Admin",  "User", "DemoCorp", "admin@example.com", registration_date
-    ))    
+       UPDATE users SET role = 'admin', verification_token = NULL
+            WHERE username = 'adminuser'
+    """
+    )
     
 conn.commit()
 conn.close()

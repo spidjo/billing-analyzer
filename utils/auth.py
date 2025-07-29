@@ -1,41 +1,21 @@
+# utils/auth.py
 import streamlit as st
-import sqlite3
-import bcrypt
 import datetime
 import secrets
+import bcrypt
 from email_validator import validate_email, EmailNotValidError
 from dotenv import load_dotenv
 import os
-from email_sender import send_plain_email  # Replace with your simple email sender if needed
+
+from utils.db import get_connection, init_user_table
+from email_sender import send_plain_email
+from utils.session import init_session_state
 
 load_dotenv()
 SENDER_EMAIL = os.getenv("SENDER_EMAIL")
 SENDER_PASSWORD = os.getenv("SENDER_PASSWORD")
-DB_FILE = "billing.db"
 
-# === DB Initialization ===
-def init_user_table():
-    conn = sqlite3.connect(DB_FILE)
-    cursor = conn.cursor()
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT UNIQUE NOT NULL,
-            password BLOB NOT NULL,
-            role TEXT NOT NULL DEFAULT 'client',
-            first_name TEXT,
-            last_name TEXT,
-            company_name TEXT,
-            email TEXT UNIQUE NOT NULL,
-            registration_date TEXT,
-            is_verified INTEGER DEFAULT 0,
-            verification_token TEXT
-        );
-    """)
-    conn.commit()
-    conn.close()
-
-# === Strong Password Validation ===
+# ----------------- Utility Functions -----------------
 def is_strong_password(password):
     return (
         len(password) >= 8 and
@@ -45,7 +25,51 @@ def is_strong_password(password):
         any(c in "!@#$%^&*()-_=+[{]};:'\",<.>/?\\|" for c in password)
     )
 
-# === Registration ===
+# ----------------- Database Interactions -----------------
+def fetch_users():
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT id, username, role FROM users")
+    users = cursor.fetchall()
+    conn.close()
+    return users
+
+def create_user(username, password, role):
+    conn = get_connection()
+    cursor = conn.cursor()
+    hashed_pw = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
+    try:
+        cursor.execute("INSERT INTO users (username, password, role) VALUES (?, ?, ?)", (username, hashed_pw, role))
+        conn.commit()
+        st.success("User created successfully!")
+    except sqlite3.IntegrityError:
+        st.error("Username already exists.")
+    conn.close()
+
+def delete_user(user_id):
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM users WHERE id = ?", (user_id,))
+    conn.commit()
+    conn.close()
+    st.success("User deleted.")
+
+# ----------------- Authentication Logic -----------------
+def authenticate_user(username, password):
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT password, role, is_verified FROM users WHERE username = ?", (username,))
+    row = cursor.fetchone()
+    conn.close()
+
+    if row:
+        stored_hash, role, is_verified = row
+        if not is_verified:
+            return "unverified", None
+        if bcrypt.checkpw(password.encode(), stored_hash):
+            return True, role
+    return False, None
+
 def register_user(username, password, first_name, last_name, company, email):
     try:
         valid_email = validate_email(email).email
@@ -61,7 +85,7 @@ def register_user(username, password, first_name, last_name, company, email):
     reg_date = datetime.date.today().isoformat()
     token = secrets.token_urlsafe(32)
 
-    conn = sqlite3.connect(DB_FILE)
+    conn = get_connection()
     cursor = conn.cursor()
     try:
         cursor.execute("""
@@ -70,14 +94,13 @@ def register_user(username, password, first_name, last_name, company, email):
         """, (username, hashed_pw, first_name, last_name, company, valid_email, reg_date, token))
         conn.commit()
 
-        # Send confirmation email
-        verify_link = f"http://localhost:8501/?verify={token}"  # Adjust for production
-        body = f"Hello {first_name},\n\nPlease verify your email address by clicking the link below:\n{verify_link}"
+        verify_link = f"http://localhost:8501/Home?verify={token}"
+        body = f"Hi {first_name},\n\nPlease verify your email address:\n{verify_link}"
         send_plain_email(
             sender_email=SENDER_EMAIL,
             sender_password=SENDER_PASSWORD,
             receiver_email=[valid_email],
-            subject="Email Verification Required",
+            subject="Verify your email",
             body=body
         )
 
@@ -88,15 +111,15 @@ def register_user(username, password, first_name, last_name, company, email):
     finally:
         conn.close()
 
-# === Email Verification ===
 def verify_email_token(token):
-    conn = sqlite3.connect(DB_FILE)
+    conn = get_connection()
     cursor = conn.cursor()
     cursor.execute("SELECT id FROM users WHERE verification_token = ?", (token,))
     row = cursor.fetchone()
     if row:
         cursor.execute("""
-            UPDATE users SET is_verified = 1, verification_token = NULL
+            UPDATE users
+            SET is_verified = 1, verification_token = NULL
             WHERE id = ?
         """, (row[0],))
         conn.commit()
@@ -105,32 +128,15 @@ def verify_email_token(token):
         st.error("Invalid or expired verification link.")
     conn.close()
 
-# === Authentication ===
-def authenticate_user(username, password):
-    conn = sqlite3.connect(DB_FILE)
-    cursor = conn.cursor()
-    cursor.execute("SELECT password, role, is_verified FROM users WHERE username = ?", (username,))
-    row = cursor.fetchone()
-    conn.close()
-
-    if row:
-        stored_hash, role, is_verified = row
-        if not is_verified:
-            return "unverified", None
-        if bcrypt.checkpw(password.encode(), stored_hash):
-            return True, role
-    return False, None
-
-# === Main Login Form ===
+# ----------------- Streamlit Forms -----------------
 def login_form():
+    init_session_state()
     init_user_table()
 
-    if "authenticated" not in st.session_state:
-        st.session_state.authenticated = False
-
-    if st.query_params.get("verify"):
-        verify_email_token(st.query_params["verify"])
-        st.query_params
+    query_params = st.query_params
+    if "verify" in query_params:
+        verify_email_token(query_params["verify"])
+        st.query_params.clear()
 
     tab_login, tab_register = st.tabs(["🔐 Login", "📝 Register"])
 
@@ -141,7 +147,7 @@ def login_form():
         if st.button("Login"):
             result, role = authenticate_user(username, password)
             if result == "unverified":
-                st.warning("Email not verified. Please check your inbox.")
+                st.warning("Please verify your email.")
             elif result:
                 st.session_state.authenticated = True
                 st.session_state.username = username
@@ -161,13 +167,11 @@ def login_form():
 
         if st.button("Register"):
             if not all([new_username, new_password, first_name, last_name, company, email]):
-                st.warning("Please fill in all fields.")
+                st.warning("All fields are required.")
             else:
                 token = register_user(new_username, new_password, first_name, last_name, company, email)
                 if token:
-                    st.success("✅ Registration successful. Check your email for verification.")
-                    st.query_params  # Clean URL
+                    st.success("✅ Registration successful. Please check your email to verify.")
 
-# === Logout ===
 def logout():
     st.session_state.clear()
