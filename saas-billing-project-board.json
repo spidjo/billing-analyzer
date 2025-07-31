@@ -1,0 +1,85 @@
+{
+  "name": "Generic SaaS Billing Platform Enhancement",
+  "description": "Enhancing a telecom billing app into a generic, multi-industry SaaS platform with production-grade architecture and features.",
+  "columns": [
+    {
+      "name": "Backlog",
+      "cards": [
+        {
+          "note": "Research SaaS billing models across industries"
+        },
+        {
+          "note": "Define system requirements for generic billing"
+        },
+        {
+          "note": "Draft high-level ERD for multi-tenant system"
+        },
+        {
+          "note": "Choose tech stack (DB, backend, frontend, infra)"
+        },
+        {
+          "note": "Set up CI/CD pipeline template"
+        }
+      ]
+    },
+    {
+      "name": "To Do",
+      "cards": [
+        {
+          "note": "Design production-ready multi-tenant database schema"
+        },
+        {
+          "note": "Refactor auth to support multiple client orgs"
+        },
+        {
+          "note": "Design role-based custom dashboards per client"
+        },
+        {
+          "note": "Integrate industry-agnostic billing rule engine"
+        },
+        {
+          "note": "Implement usage-based pricing models"
+        },
+        {
+          "note": "Create test coverage strategy"
+        },
+        {
+          "note": "Draft marketing site with SaaS landing page"
+        }
+      ]
+    },
+    {
+      "name": "In Progress",
+      "cards": [
+        {
+          "note": "Modularize Streamlit backend and logic into services"
+        },
+        {
+          "note": "Develop generic invoice generation system"
+        }
+      ]
+    },
+    {
+      "name": "Review",
+      "cards": [
+        {
+          "note": "Conduct internal alpha testing"
+        },
+        {
+          "note": "Prepare client onboarding demo data"
+        }
+      ]
+    },
+    {
+      "name": "Done",
+      "cards": [
+        {
+          "note": "Initial SaaS concept validation"
+        },
+        {
+          "note": "GitHub repo and project scaffold completed"
+        }
+      ]
+    }
+  ]
+}
